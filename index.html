@@ -1,232 +1,461 @@
+```html project="CasinoGame" file="index.html" version=1
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Simple Casino Game</title>
-<style>
-  body {
-    font-family: sans-serif;
-    background: linear-gradient(to bottom, #4b0082, #000080);
-    color: white;
-    text-align: center;
-    padding: 20px;
-  }
-  .card {
-    background: rgba(0,0,0,0.5);
-    border: 2px solid white;
-    border-radius: 15px;
-    padding: 20px;
-    margin: 20px auto;
-    max-width: 400px;
-  }
-  #reels { display: flex; justify-content: center; gap: 15px; font-size: 50px; margin: 20px 0; }
-  button {
-    padding: 10px 20px;
-    font-size: 16px;
-    margin: 5px;
-    cursor: pointer;
-    border-radius: 8px;
-    border: none;
-  }
-  .skins { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; margin-top: 10px;}
-  .skin-btn { padding: 5px 10px; border-radius: 5px; font-size: 14px; }
-  .active { font-weight: bold; color: yellow; }
-  #roulette-wheel { margin: 15px auto; width: 200px; height: 200px; border-radius: 50%; border: 4px solid white; display:flex; align-items:center; justify-content:center; font-size: 40px; background: green; }
-  .card-flex { display:flex; justify-content:center; gap:10px; flex-wrap:wrap; }
-  .blackjack-card { width:40px; height:60px; border:1px solid white; border-radius:5px; display:flex; flex-direction:column; align-items:center; justify-content:center; margin:2px; background:white; color:black; font-weight:bold;}
-  .red { color:red; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Casino Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #222;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 80%;
+            max-width: 800px;
+            margin-bottom: 20px;
+            padding: 20px;
+            background-color: #333;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        h2 {
+            color: #eee;
+            text-align: center;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #367c39;
+        }
+
+        .slots-reels {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        .slots-reel {
+            font-size: 2em;
+            width: 50px;
+            text-align: center;
+            margin: 0 5px;
+            background-color: #444;
+            border-radius: 5px;
+            padding: 10px;
+        }
+
+        .roulette-wheel {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background-color: #000;
+            margin: 10px auto;
+            position: relative;
+            overflow: hidden;
+            transition: transform 5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .roulette-number {
+            position: absolute;
+            width: 20px;
+            text-align: center;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 1.2em;
+        }
+
+        .blackjack-cards {
+            display: flex;
+            margin-bottom: 10px;
+        }
+
+        .blackjack-card {
+            width: 70px;
+            height: 100px;
+            border: 1px solid #fff;
+            border-radius: 5px;
+            margin: 0 5px;
+            text-align: center;
+            font-size: 1.5em;
+            background-color: #555;
+            line-height: 100px;
+        }
+
+        .skins-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .skin {
+            width: 80px;
+            height: 80px;
+            border: 1px solid #fff;
+            border-radius: 5px;
+            margin: 5px;
+            text-align: center;
+            line-height: 80px;
+            cursor: pointer;
+            background-color: #444;
+        }
+
+        .skin.equipped {
+            border-color: gold;
+            box-shadow: 0 0 5px gold;
+        }
+
+        #message {
+            text-align: center;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
+    <h1>Casino Game</h1>
 
-<h1>Simple Casino</h1>
+    <div class="container">
+        <h2>Balance: <span id="balance">$1000</span></h2>
+        <p id="message"></p>
+    </div>
 
-<div class="card">
-  <h2>Balance: $<span id="balance">1000</span></h2>
-</div>
+    <!-- Slots Section -->
+    <div class="container">
+        <h2>Slots</h2>
+        <div class="slots-reels">
+            <div class="slots-reel" id="reel1">🍒</div>
+            <div class="slots-reel" id="reel2">🍋</div>
+            <div class="slots-reel" id="reel3">🍊</div>
+        </div>
+        <button onclick="playSlots()">Spin ($10)</button>
+    </div>
 
-<div class="card" id="slots-card">
-  <h2>Slots</h2>
-  <div id="reels">
-    <div id="reel1">🍒</div>
-    <div id="reel2">🍋</div>
-    <div id="reel3">🍊</div>
-  </div>
-  <button id="spinSlotsBtn">Spin ($10)</button>
-  <div id="slots-msg"></div>
-</div>
+    <!-- Roulette Section -->
+    <div class="container">
+        <h2>Roulette</h2>
+        <div class="roulette-wheel">
+            <div class="roulette-number" id="rouletteNumber">0</div>
+        </div>
+        <button onclick="playRoulette('red')">Bet Red ($50)</button>
+        <button onclick="playRoulette('black')">Bet Black ($50)</button>
+    </div>
 
-<div class="card" id="roulette-card">
-  <h2>Roulette</h2>
-  <div id="roulette-wheel">0</div>
-  <div>
-    <button id="bet-red">Red ($50)</button>
-    <button id="bet-black">Black ($50)</button>
-    <button id="spinRouletteBtn">Spin</button>
-  </div>
-  <div id="roulette-msg"></div>
-</div>
+    <!-- Blackjack Section -->
+    <div class="container">
+        <h2>Blackjack</h2>
+        <div class="blackjack-cards" id="playerCards"></div>
+        <div class="blackjack-cards" id="dealerCards"></div>
+        <p>Dealer: <span id="dealerScore">0</span> | Player: <span id="playerScore">0</span></p>
+        <button onclick="startBlackjack()">Start Game</button>
+        <button onclick="hit()" disabled>Hit</button>
+        <button onclick="stand()" disabled>Stand</button>
+        <p id="blackjackMessage"></p>
+    </div>
 
-<div class="card" id="blackjack-card">
-  <h2>Blackjack</h2>
-  <div>Bet: $<input type="number" id="blackjack-bet" min="10" value="50"></div>
-  <div>
-    <button id="startBlackjackBtn">Deal Cards</button>
-    <button id="hitBtn">Hit</button>
-    <button id="standBtn">Stand</button>
-  </div>
-  <div>
-    <h3>Dealer:</h3>
-    <div id="dealer-hand" class="card-flex"></div>
-  </div>
-  <div>
-    <h3>Player:</h3>
-    <div id="player-hand" class="card-flex"></div>
-  </div>
-  <div id="blackjack-msg"></div>
-</div>
+    <!-- Skins Section -->
+    <div class="container">
+        <h2>Skins</h2>
+        <div class="skins-container">
+            <div class="skin" onclick="equipSkin(1)" id="skin1">Skin 1 (Free)</div>
+            <div class="skin" onclick="equipSkin(2)" id="skin2">Skin 2 ($200)</div>
+            <div class="skin" onclick="equipSkin(3)" id="skin3">Skin 3 ($500)</div>
+            <div class="skin" onclick="equipSkin(4)" id="skin4">Skin 4 ($800)</div>
+            <div class="skin" onclick="equipSkin(5)" id="skin5">Skin 5 ($1200)</div>
+        </div>
+    </div>
 
-<div class="card">
-  <h2>Skins</h2>
-  <div class="skins" id="skins-container"></div>
-  <div>Active skin multiplies winnings by <span id="skin-multiplier">1</span>x</div>
-</div>
+    <script>
+        // Game variables
+        let balance = 1000;
+        let skinMultiplier = 1;
+        let equippedSkin = 1;
 
-<script>
-// ===== GLOBAL =====
-let balance = 1000;
-let activeSkin = 0;
+        // Update balance display
+        function updateBalance() {
+            document.getElementById('balance').innerText = '$' + balance;
+        }
 
-const SKINS = [
-  {name:"Classic", price:0, owned:true},
-  {name:"Golden", price:500, owned:false},
-  {name:"Neon", price:1000, owned:false},
-  {name:"Diamond", price:2500, owned:false},
-  {name:"Rainbow", price:5000, owned:false},
-];
+        // Message function
+        function setMessage(msg) {
+            document.getElementById('message').innerText = msg;
+        }
 
-// ===== SLOTS =====
-const SYMBOLS = ["🍒","🍋","🍊","🍇","🔔","⭐","7️⃣"];
-const reelsDivs = [document.getElementById("reel1"), document.getElementById("reel2"), document.getElementById("reel3")];
-const slotsMsg = document.getElementById("slots-msg");
-document.getElementById("spinSlotsBtn").addEventListener("click", ()=> {
-  if(balance<10){ slotsMsg.textContent="Not enough money"; return; }
-  balance-=10; updateBalance();
-  const result = SYMBOLS.map(()=> SYMBOLS[Math.floor(Math.random()*SYMBOLS.length)]);
-  reelsDivs.forEach((div,i)=> div.textContent=result[i]);
-  if(result[0]===result[1] && result[1]===result[2]){
-    const win = 10*(activeSkin+1);
-    balance+=win;
-    updateBalance();
-    slotsMsg.textContent=`🎉 You won $${win}!`;
-  } else slotsMsg.textContent="";
-});
+        // Slots game
+        function playSlots() {
+            if (balance < 10) {
+                setMessage("Not enough balance to play slots!");
+                return;
+            }
 
-// ===== ROULETTE =====
-const ROULETTE_NUMBERS = [
-  {n:0,c:"green"},{n:32,c:"red"},{n:15,c:"black"},{n:19,c:"red"},{n:4,c:"black"},
-  {n:21,c:"red"},{n:2,c:"black"},{n:25,c:"red"},{n:17,c:"black"},{n:34,c:"red"},
-  {n:6,c:"black"},{n:27,c:"red"},{n:13,c:"black"},{n:36,c:"red"},{n:11,c:"black"},
-  {n:30,c:"red"},{n:8,c:"black"},{n:23,c:"red"},{n:10,c:"black"},{n:5,c:"red"},
-  {n:24,c:"black"},{n:16,c:"red"},{n:33,c:"black"},{n:1,c:"red"},{n:20,c:"black"},
-  {n:14,c:"red"},{n:31,c:"black"},{n:9,c:"red"},{n:22,c:"black"},{n:18,c:"red"},
-  {n:29,c:"black"},{n:7,c:"red"},{n:28,c:"black"},{n:12,c:"red"},{n:35,c:"black"},
-  {n:3,c:"red"},{n:26,c:"black"}
-];
-let rouletteBet=null;
-const rouletteWheel=document.getElementById("roulette-wheel");
-const rouletteMsg=document.getElementById("roulette-msg");
-document.getElementById("bet-red").addEventListener("click", ()=> rouletteBet="red");
-document.getElementById("bet-black").addEventListener("click", ()=> rouletteBet="black");
-document.getElementById("spinRouletteBtn").addEventListener("click", ()=> {
-  if(!rouletteBet){ rouletteMsg.textContent="Choose red or black"; return; }
-  if(balance<50){ rouletteMsg.textContent="Not enough money"; return; }
-  balance-=50; updateBalance();
-  const res=ROULETTE_NUMBERS[Math.floor(Math.random()*ROULETTE_NUMBERS.length)];
-  rouletteWheel.textContent=res.n;
-  rouletteWheel.style.background=res.c;
-  if(res.c===rouletteBet){ 
-    const win=100*(activeSkin+1);
-    balance+=win; updateBalance();
-    rouletteMsg.textContent=`🎉 You won $${win}!`;
-  } else rouletteMsg.textContent="";
-  rouletteBet=null;
-});
+            balance -= 10;
+            updateBalance();
 
-// ===== BLACKJACK =====
-const SUITS=["♠","♥","♦","♣"];
-const VALUES=["2","3","4","5","6","7","8","9","10","J","Q","K","A"];
-let blackjackState = {deck:[],player:[],dealer:[],bet:0,over:true};
-const dealerHandDiv = document.getElementById("dealer-hand");
-const playerHandDiv = document.getElementById("player-hand");
-const blackjackMsg = document.getElementById("blackjack-msg");
-function generateDeck(){return SUITS.flatMap(s=>VALUES.map(v=>({suit:s,value:v})));}
-function handValue(hand){
-  let val=0,aces=0;
-  for(const c of hand){
-    if(c.value==="A"){val+=11; aces++;}
-    else if(["J","Q","K"].includes(c.value)) val+=10;
-    else val+=parseInt(c.value);
-  }
-  while(val>21 && aces>0){ val-=10; aces--; }
-  return val;
-}
-function renderHand(div,hand){div.innerHTML=""; hand.forEach(c=>{
-  const cardDiv=document.createElement("div");
-  cardDiv.className="blackjack-card"; if(c.suit==="♥"||c.suit==="♦") cardDiv.classList.add("red");
-  cardDiv.textContent=c.value+c.suit; div.appendChild(cardDiv);
-});}
-document.getElementById("startBlackjackBtn").addEventListener("click", ()=>{
-  let bet=parseInt(document.getElementById("blackjack-bet").value); if(isNaN(bet)||bet<10||bet>balance){ blackjackMsg.textContent="Invalid bet"; return; }
-  blackjackState.deck=generateDeck().sort(()=>Math.random()-0.5);
-  blackjackState.player=[blackjackState.deck.pop(),blackjackState.deck.pop()];
-  blackjackState.dealer=[blackjackState.deck.pop(),blackjackState.deck.pop()];
-  blackjackState.bet=bet; blackjackState.over=false; balance-=bet; updateBalance();
-  renderHand(playerHandDiv,blackjackState.player);
-  renderHand(dealerHandDiv,[blackjackState.dealer[0],{suit:"?",value:"?"}]);
-  blackjackMsg.textContent="";
-});
-document.getElementById("hitBtn").addEventListener("click", ()=>{
-  if(blackjackState.over) return;
-  blackjackState.player.push(blackjackState.deck.pop());
-  renderHand(playerHandDiv,blackjackState.player);
-  if(handValue(blackjackState.player)>21){ blackjackMsg.textContent="Bust! You lose."; blackjackState.over=true; }
-});
-document.getElementById("standBtn").addEventListener("click", ()=>{
-  if(blackjackState.over) return;
-  while(handValue(blackjackState.dealer)<17){ blackjackState.dealer.push(blackjackState.deck.pop()); }
-  renderHand(dealerHandDiv,blackjackState.dealer);
-  const playerVal=handValue(blackjackState.player);
-  const dealerVal=handValue(blackjackState.dealer);
-  let msg="";
-  let win=0;
-  if(dealerVal>21 || playerVal>dealerVal){ win=blackjackState.bet*(activeSkin+1); balance+=win; msg=`🎉 You win $${win}!`; }
-  else if(playerVal<dealerVal){ msg="You lose."; }
-  else{ win=blackjackState.bet*(activeSkin+1); balance+=win; msg=`Push! You get back $${win}.`; }
-  updateBalance(); blackjackMsg.textContent=msg; blackjackState.over=true;
-});
+            const symbols = ['🍒', '🍋', '🍊', '🍇', '🔔', '⭐', '7️⃣'];
+            let reel1 = symbols[Math.floor(Math.random() * symbols.length)];
+            let reel2 = symbols[Math.floor(Math.random() * symbols.length)];
+            let reel3 = symbols[Math.floor(Math.random() * symbols.length)];
 
-// ===== SKINS =====
-const skinsContainer=document.getElementById("skins-container");
-function renderSkins(){
-  skinsContainer.innerHTML="";
-  SKINS.forEach((s,i)=>{
-    const btn=document.createElement("button");
-    btn.textContent=s.name + (s.owned?"":" ($"+s.price+")");
-    btn.className="skin-btn";
-    if(i===activeSkin) btn.classList.add("active");
-    btn.onclick=()=>{
-      if(!s.owned && balance>=s.price){ balance-=s.price; s.owned=true; updateBalance(); }
-      if(s.owned){ activeSkin=i; renderSkins(); updateSkinMultiplier(); }
-    };
-    skinsContainer.appendChild(btn);
-  });
-}
-function updateSkinMultiplier(){document.getElementById("skin-multiplier").textContent=activeSkin+1;}
-function updateBalance(){document.getElementById("balance").textContent=balance; renderSkins();}
-renderSkins();
-updateSkinMultiplier();
-</script>
+            document.getElementById('reel1').innerText = reel1;
+            document.getElementById('reel2').innerText = reel2;
+            document.getElementById('reel3').innerText = reel3;
 
+            if (reel1 === reel2 && reel2 === reel3) {
+                let winAmount = 10 * skinMultiplier;
+                balance += winAmount;
+                updateBalance();
+                setMessage(`Slots win! You won $${winAmount}!`);
+            } else {
+                setMessage("Slots: No luck, try again!");
+            }
+        }
+
+        // Roulette game
+        function playRoulette(betColor) {
+            if (balance < 50) {
+                setMessage("Not enough balance to play roulette!");
+                return;
+            }
+
+            balance -= 50;
+            updateBalance();
+
+            let randomNumber = Math.floor(Math.random() * 37); // 0-36
+            let color = randomNumber === 0 ? 'green' : (randomNumber % 2 === 0 ? 'black' : 'red');
+
+            document.getElementById('rouletteNumber').innerText = randomNumber;
+
+            if ((betColor === 'red' && color === 'red') || (betColor === 'black' && color === 'black')) {
+                let winAmount = 100 * skinMultiplier;
+                balance += winAmount;
+                updateBalance();
+                setMessage(`Roulette win! You won $${winAmount}!`);
+            } else {
+                setMessage("Roulette: Not this time!");
+            }
+        }
+
+        // Blackjack game
+        let deck = [];
+        let playerHand = [];
+        let dealerHand = [];
+        let gameStarted = false;
+
+        function createDeck() {
+            const suits = ['♠', '♥', '♦', '♣'];
+            const values = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+            deck = [];
+
+            for (let suit of suits) {
+                for (let value of values) {
+                    deck.push({ Value: value, Suit: suit });
+                }
+            }
+        }
+
+        function shuffleDeck() {
+            for (let i = deck.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [deck[i], deck[j]] = [deck[j], deck[i]];
+            }
+        }
+
+        function dealCard() {
+            if (deck.length > 0) {
+                return deck.pop();
+            }
+            return null;
+        }
+
+        function calculateHandValue(hand) {
+            let hasAce = false;
+            let total = 0;
+
+            for (let card of hand) {
+                let cardValue = parseInt(card.Value);
+                if (isNaN(cardValue)) {
+                    if (card.Value === 'A') {
+                        hasAce = true;
+                        cardValue = 11;
+                    } else {
+                        cardValue = 10;
+                    }
+                }
+                total += cardValue;
+            }
+
+            if (hasAce && total > 21) {
+                total -= 10;
+            }
+
+            return total;
+        }
+
+        function displayCards(hand, elementId) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = '';
+            for (let card of hand) {
+                const cardDiv = document.createElement('div');
+                cardDiv.classList.add('blackjack-card');
+                cardDiv.innerText = card.Value + card.Suit;
+                element.appendChild(cardDiv);
+            }
+        }
+
+        function startBlackjack() {
+            if (balance < 50) {
+                setMessage("Not enough balance to play blackjack!");
+                return;
+            }
+
+            balance -= 50;
+            updateBalance();
+
+            gameStarted = true;
+            document.getElementById('blackjackMessage').innerText = '';
+            document.querySelector('button[onclick="startBlackjack()"]').disabled = true;
+            document.querySelector('button[onclick="hit()"]').disabled = false;
+            document.querySelector('button[onclick="stand()"]').disabled = false;
+
+            createDeck();
+            shuffleDeck();
+            playerHand = [dealCard(), dealCard()];
+            dealerHand = [dealCard(), dealCard()];
+
+            displayCards(playerHand, 'playerCards');
+            displayCards(dealerHand, 'dealerCards');
+
+            updateScores();
+        }
+
+        function hit() {
+            if (!gameStarted) return;
+
+            const newCard = dealCard();
+            playerHand.push(newCard);
+            displayCards(playerHand, 'playerCards');
+            updateScores();
+
+            if (calculateHandValue(playerHand) > 21) {
+                endBlackjackRound();
+            }
+        }
+
+        function stand() {
+            if (!gameStarted) return;
+            endBlackjackRound();
+        }
+
+        function endBlackjackRound() {
+            gameStarted = false;
+            document.querySelector('button[onclick="hit()"]').disabled = true;
+            document.querySelector('button[onclick="stand()"]').disabled = true;
+            document.querySelector('button[onclick="startBlackjack()"]').disabled = false;
+
+            let playerScore = calculateHandValue(playerHand);
+            let dealerScore = calculateHandValue(dealerHand);
+
+            while (dealerScore < 17) {
+                const newCard = dealCard();
+                dealerHand.push(newCard);
+                displayCards(dealerHand, 'dealerCards');
+                dealerScore = calculateHandValue(dealerHand);
+            }
+            updateScores();
+
+            let message = '';
+            if (playerScore > 21) {
+                message = 'You busted! Dealer wins.';
+            } else if (dealerScore > 21) {
+                let winAmount = 100 * skinMultiplier;
+                balance += (100 * skinMultiplier);
+                updateBalance();
+                message = `Dealer busted! You win $${winAmount}!`;
+            } else if (playerScore > dealerScore) {
+                let winAmount = 100 * skinMultiplier;
+                balance += (100 * skinMultiplier);
+                updateBalance();
+                message = `You win $${winAmount}!`;
+            } else if (dealerScore > playerScore) {
+                message = 'Dealer wins.';
+            } else {
+                balance += 50;
+                updateBalance();
+                message = 'It\'s a push!';
+            }
+
+            document.getElementById('blackjackMessage').innerText = message;
+        }
+
+        function updateScores() {
+            document.getElementById('dealerScore').innerText = calculateHandValue(dealerHand);
+            document.getElementById('playerScore').innerText = calculateHandValue(playerHand);
+        }
+
+        // Skins functions
+        function equipSkin(skinNumber) {
+            let skinPrice = 0;
+            switch (skinNumber) {
+                case 1:
+                    skinPrice = 0;
+                    skinMultiplier = 1;
+                    break;
+                case 2:
+                    skinPrice = 200;
+                    skinMultiplier = 2;
+                    break;
+                case 3:
+                    skinPrice = 500;
+                    skinMultiplier = 3;
+                    break;
+                case 4:
+                    skinPrice = 800;
+                    skinMultiplier = 4;
+                    break;
+                case 5:
+                    skinPrice = 1200;
+                    skinMultiplier = 5;
+                    break;
+            }
+
+            if (balance >= skinPrice) {
+                balance -= skinPrice;
+                updateBalance();
+                skinMultiplier = skinMultiplier;
+                equippedSkin = skinNumber;
+
+                // Update skin display
+                for (let i = 1; i <= 5; i++) {
+                    document.getElementById(`skin${i}`).classList.remove('equipped');
+                }
+                document.getElementById(`skin${skinNumber}`).classList.add('equipped');
+                setMessage(`Equipped Skin ${skinNumber}!`);
+            } else {
+                setMessage("Not enough balance to buy this skin!");
+            }
+        }
+
+        // Initial balance update
+        updateBalance();
+    </script>
 </body>
 </html>
