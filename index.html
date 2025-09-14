@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Simple Casino Game</title>
+<style>
+  body {
+    font-family: sans-serif;
+    background: linear-gradient(to bottom, #4b0082, #000080);
+    color: white;
+    text-align: center;
+    padding: 20px;
+  }
+  .card {
+    background: rgba(0,0,0,0.5);
+    border: 2px solid white;
+    border-radius: 15px;
+    padding: 20px;
+    margin: 20px auto;
+    max-width: 400px;
+  }
+  #reels { display: flex; justify-content: center; gap: 15px; font-size: 50px; margin: 20px 0; }
+  button {
+    padding: 10px 20px;
+    font-size: 16px;
+    margin: 5px;
+    cursor: pointer;
+    border-radius: 8px;
+    border: none;
+  }
+  .skins { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; margin-top: 10px;}
+  .skin-btn { padding: 5px 10px; border-radius: 5px; font-size: 14px; }
+  .active { font-weight: bold; color: yellow; }
+  #roulette-wheel { margin: 15px auto; width: 200px; height: 200px; border-radius: 50%; border: 4px solid white; display:flex; align-items:center; justify-content:center; font-size: 40px; background: green; }
+  .card-flex { display:flex; justify-content:center; gap:10px; flex-wrap:wrap; }
+  .blackjack-card { width:40px; height:60px; border:1px solid white; border-radius:5px; display:flex; flex-direction:column; align-items:center; justify-content:center; margin:2px; background:white; color:black; font-weight:bold;}
+  .red { color:red; }
+</style>
+</head>
+<body>
+
+<h1>Simple Casino</h1>
+
+<div class="card">
+  <h2>Balance: $<span id="balance">1000</span></h2>
+</div>
+
+<div class="card" id="slots-card">
+  <h2>Slots</h2>
+  <div id="reels">
+    <div id="reel1">🍒</div>
+    <div id="reel2">🍋</div>
+    <div id="reel3">🍊</div>
+  </div>
+  <button id="spinSlotsBtn">Spin ($10)</button>
+  <div id="slots-msg"></div>
+</div>
+
+<div class="card" id="roulette-card">
+  <h2>Roulette</h2>
+  <div id="roulette-wheel">0</div>
+  <div>
+    <button id="bet-red">Red ($50)</button>
+    <button id="bet-black">Black ($50)</button>
+    <button id="spinRouletteBtn">Spin</button>
+  </div>
+  <div id="roulette-msg"></div>
+</div>
+
+<div class="card" id="blackjack-card">
+  <h2>Blackjack</h2>
+  <div>Bet: $<input type="number" id="blackjack-bet" min="10" value="50"></div>
+  <div>
+    <button id="startBlackjackBtn">Deal Cards</button>
+    <button id="hitBtn">Hit</button>
+    <button id="standBtn">Stand</button>
+  </div>
+  <div>
+    <h3>Dealer:</h3>
+    <div id="dealer-hand" class="card-flex"></div>
+  </div>
+  <div>
+    <h3>Player:</h3>
+    <div id="player-hand" class="card-flex"></div>
+  </div>
+  <div id="blackjack-msg"></div>
+</div>
+
+<div class="card">
+  <h2>Skins</h2>
+  <div class="skins" id="skins-container"></div>
+  <div>Active skin multiplies winnings by <span id="skin-multiplier">1</span>x</div>
+</div>
+
+<script>
+// ===== GLOBAL =====
+let balance = 1000;
+let activeSkin = 0;
+
+const SKINS = [
+  {name:"Classic", price:0, owned:true},
+  {name:"Golden", price:500, owned:false},
+  {name:"Neon", price:1000, owned:false},
+  {name:"Diamond", price:2500, owned:false},
+  {name:"Rainbow", price:5000, owned:false},
+];
+
+// ===== SLOTS =====
+const SYMBOLS = ["🍒","🍋","🍊","🍇","🔔","⭐","7️⃣"];
+const reelsDivs = [document.getElementById("reel1"), document.getElementById("reel2"), document.getElementById("reel3")];
+const slotsMsg = document.getElementById("slots-msg");
+document.getElementById("spinSlotsBtn").addEventListener("click", ()=> {
+  if(balance<10){ slotsMsg.textContent="Not enough money"; return; }
+  balance-=10; updateBalance();
+  const result = SYMBOLS.map(()=> SYMBOLS[Math.floor(Math.random()*SYMBOLS.length)]);
+  reelsDivs.forEach((div,i)=> div.textContent=result[i]);
+  if(result[0]===result[1] && result[1]===result[2]){
+    const win = 10*(activeSkin+1);
+    balance+=win;
+    updateBalance();
+    slotsMsg.textContent=`🎉 You won $${win}!`;
+  } else slotsMsg.textContent="";
+});
+
+// ===== ROULETTE =====
+const ROULETTE_NUMBERS = [
+  {n:0,c:"green"},{n:32,c:"red"},{n:15,c:"black"},{n:19,c:"red"},{n:4,c:"black"},
+  {n:21,c:"red"},{n:2,c:"black"},{n:25,c:"red"},{n:17,c:"black"},{n:34,c:"red"},
+  {n:6,c:"black"},{n:27,c:"red"},{n:13,c:"black"},{n:36,c:"red"},{n:11,c:"black"},
+  {n:30,c:"red"},{n:8,c:"black"},{n:23,c:"red"},{n:10,c:"black"},{n:5,c:"red"},
+  {n:24,c:"black"},{n:16,c:"red"},{n:33,c:"black"},{n:1,c:"red"},{n:20,c:"black"},
+  {n:14,c:"red"},{n:31,c:"black"},{n:9,c:"red"},{n:22,c:"black"},{n:18,c:"red"},
+  {n:29,c:"black"},{n:7,c:"red"},{n:28,c:"black"},{n:12,c:"red"},{n:35,c:"black"},
+  {n:3,c:"red"},{n:26,c:"black"}
+];
+let rouletteBet=null;
+const rouletteWheel=document.getElementById("roulette-wheel");
+const rouletteMsg=document.getElementById("roulette-msg");
+document.getElementById("bet-red").addEventListener("click", ()=> rouletteBet="red");
+document.getElementById("bet-black").addEventListener("click", ()=> rouletteBet="black");
+document.getElementById("spinRouletteBtn").addEventListener("click", ()=> {
+  if(!rouletteBet){ rouletteMsg.textContent="Choose red or black"; return; }
+  if(balance<50){ rouletteMsg.textContent="Not enough money"; return; }
+  balance-=50; updateBalance();
+  const res=ROULETTE_NUMBERS[Math.floor(Math.random()*ROULETTE_NUMBERS.length)];
+  rouletteWheel.textContent=res.n;
+  rouletteWheel.style.background=res.c;
+  if(res.c===rouletteBet){ 
+    const win=100*(activeSkin+1);
+    balance+=win; updateBalance();
+    rouletteMsg.textContent=`🎉 You won $${win}!`;
+  } else rouletteMsg.textContent="";
+  rouletteBet=null;
+});
+
+// ===== BLACKJACK =====
+const SUITS=["♠","♥","♦","♣"];
+const VALUES=["2","3","4","5","6","7","8","9","10","J","Q","K","A"];
+let blackjackState = {deck:[],player:[],dealer:[],bet:0,over:true};
+const dealerHandDiv = document.getElementById("dealer-hand");
+const playerHandDiv = document.getElementById("player-hand");
+const blackjackMsg = document.getElementById("blackjack-msg");
+function generateDeck(){return SUITS.flatMap(s=>VALUES.map(v=>({suit:s,value:v})));}
+function handValue(hand){
+  let val=0,aces=0;
+  for(const c of hand){
+    if(c.value==="A"){val+=11; aces++;}
+    else if(["J","Q","K"].includes(c.value)) val+=10;
+    else val+=parseInt(c.value);
+  }
+  while(val>21 && aces>0){ val-=10; aces--; }
+  return val;
+}
+function renderHand(div,hand){div.innerHTML=""; hand.forEach(c=>{
+  const cardDiv=document.createElement("div");
+  cardDiv.className="blackjack-card"; if(c.suit==="♥"||c.suit==="♦") cardDiv.classList.add("red");
+  cardDiv.textContent=c.value+c.suit; div.appendChild(cardDiv);
+});}
+document.getElementById("startBlackjackBtn").addEventListener("click", ()=>{
+  let bet=parseInt(document.getElementById("blackjack-bet").value); if(isNaN(bet)||bet<10||bet>balance){ blackjackMsg.textContent="Invalid bet"; return; }
+  blackjackState.deck=generateDeck().sort(()=>Math.random()-0.5);
+  blackjackState.player=[blackjackState.deck.pop(),blackjackState.deck.pop()];
+  blackjackState.dealer=[blackjackState.deck.pop(),blackjackState.deck.pop()];
+  blackjackState.bet=bet; blackjackState.over=false; balance-=bet; updateBalance();
+  renderHand(playerHandDiv,blackjackState.player);
+  renderHand(dealerHandDiv,[blackjackState.dealer[0],{suit:"?",value:"?"}]);
+  blackjackMsg.textContent="";
+});
+document.getElementById("hitBtn").addEventListener("click", ()=>{
+  if(blackjackState.over) return;
+  blackjackState.player.push(blackjackState.deck.pop());
+  renderHand(playerHandDiv,blackjackState.player);
+  if(handValue(blackjackState.player)>21){ blackjackMsg.textContent="Bust! You lose."; blackjackState.over=true; }
+});
+document.getElementById("standBtn").addEventListener("click", ()=>{
+  if(blackjackState.over) return;
+  while(handValue(blackjackState.dealer)<17){ blackjackState.dealer.push(blackjackState.deck.pop()); }
+  renderHand(dealerHandDiv,blackjackState.dealer);
+  const playerVal=handValue(blackjackState.player);
+  const dealerVal=handValue(blackjackState.dealer);
+  let msg="";
+  let win=0;
+  if(dealerVal>21 || playerVal>dealerVal){ win=blackjackState.bet*(activeSkin+1); balance+=win; msg=`🎉 You win $${win}!`; }
+  else if(playerVal<dealerVal){ msg="You lose."; }
+  else{ win=blackjackState.bet*(activeSkin+1); balance+=win; msg=`Push! You get back $${win}.`; }
+  updateBalance(); blackjackMsg.textContent=msg; blackjackState.over=true;
+});
+
+// ===== SKINS =====
+const skinsContainer=document.getElementById("skins-container");
+function renderSkins(){
+  skinsContainer.innerHTML="";
+  SKINS.forEach((s,i)=>{
+    const btn=document.createElement("button");
+    btn.textContent=s.name + (s.owned?"":" ($"+s.price+")");
+    btn.className="skin-btn";
+    if(i===activeSkin) btn.classList.add("active");
+    btn.onclick=()=>{
+      if(!s.owned && balance>=s.price){ balance-=s.price; s.owned=true; updateBalance(); }
+      if(s.owned){ activeSkin=i; renderSkins(); updateSkinMultiplier(); }
+    };
+    skinsContainer.appendChild(btn);
+  });
+}
+function updateSkinMultiplier(){document.getElementById("skin-multiplier").textContent=activeSkin+1;}
+function updateBalance(){document.getElementById("balance").textContent=balance; renderSkins();}
+renderSkins();
+updateSkinMultiplier();
+</script>
+
+</body>
+</html>
