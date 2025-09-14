@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Casino (Single File)</title>
+<title>Casino (Single File) - Updated</title>
 <style>
   :root{
     --bg1: #2b1055;
@@ -13,7 +13,7 @@
     --accent: #f6c84c;
     --muted: #cbd5e1;
   }
-  html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial}
+  html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial}
   body{
     background: linear-gradient(135deg,var(--bg1),var(--bg2));
     color:#fff;display:flex;align-items:center;justify-content:center;padding:20px;
@@ -48,9 +48,10 @@
   /* roulette */
   .roulette-area{display:flex;flex-direction:column;align-items:center;gap:12px}
   .wheel{width:260px;height:260px;border-radius:50%;display:flex;align-items:center;justify-content:center;position:relative;border:6px solid rgba(255,255,255,0.06);overflow:hidden}
-  .wheel-inner{width:86%;height:86%;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(180deg,#032,#044)}
-  .ticker{position:absolute;top:-12px;left:50%;transform:translateX(-50%);width:18px;height:28px;background:gold;border-bottom-left-radius:8px;border-bottom-right-radius:8px}
-  .roulette-number{font-size:38px;font-weight:800}
+  .wheel-inner{width:100%;height:100%;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:transform 3s cubic-bezier(.1,.8,.2,1)}
+  .wheel-center{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+  .ticker{position:absolute;top:-12px;left:50%;transform:translateX(-50%);width:18px;height:28px;background:gold;border-bottom-left-radius:8px;border-bottom-right-radius:8px;z-index:5}
+  .roulette-number{font-size:38px;font-weight:800;pointer-events:none}
   .spin-anim{animation:spin 0.6s linear infinite}
   @keyframes spin{to{transform:rotate(360deg)}}
   /* blackjack */
@@ -122,19 +123,24 @@
     <div id="view-roulette" class="view" style="display:none">
       <div class="roulette-area">
         <div class="wheel" id="wheel">
-          <div id="wheelInner" class="wheel-inner">
+          <div id="wheelInner" class="wheel-inner" style="transform:rotate(0deg);"></div>
+          <div class="wheel-center">
             <div id="rouletteDisplay" class="roulette-number">Place Bet</div>
           </div>
           <div class="ticker"></div>
         </div>
 
-        <div style="display:flex;gap:8px">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
           <button id="betRed" class="btn">Red</button>
           <button id="betBlack" class="btn">Black</button>
+          <div style="display:flex;gap:6px;align-items:center;margin-left:6px">
+            <input id="rouletteNumber" type="number" min="0" max="36" placeholder="0-36" style="width:84px;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:white" />
+            <button id="betNumberBtn" class="btn">Bet Number ($50)</button>
+          </div>
         </div>
 
         <div id="rouletteWin" style="display:none" class="muted">WIN +$0</div>
-        <div class="muted" style="margin-top:6px">Bet costs $50</div>
+        <div class="muted" style="margin-top:6px">Color bet costs $50 — Number bet costs $50 (Single number pays 35×)</div>
       </div>
     </div>
 
@@ -171,13 +177,13 @@
   <div style="display:flex;gap:12px">
     <div id="infoBox" class="card" style="flex:1;display:none">
       <div style="font-weight:700;margin-bottom:8px">How to play</div>
-      <div class="muted" id="infoText">Slots: $10 per spin. Roulette: $50 per spin. Blackjack: place bet and deal.</div>
+      <div class="muted" id="infoText">Slots: $10 per spin (3-of-a-kind → $100). Roulette: $50 per color / number bet. Blackjack: place bet and deal.</div>
     </div>
 
     <div id="shopBox" class="card" style="flex:1;display:none">
       <div style="font-weight:700;margin-bottom:8px">Skin Shop</div>
       <div class="shop-list" id="skinList"></div>
-      <div style="margin-top:8px" class="muted" id="skinInfo">Active multiplier: x1</div>
+      <div style="margin-top:8px" class="muted" id="skinInfo">Skins are cosmetic</div>
     </div>
   </div>
 
@@ -185,7 +191,7 @@
 </div>
 
 <script>
-/* ---------- Data (like original) ---------- */
+/* ---------- Data (like original but expanded skins) ---------- */
 const SYMBOLS = [
   { id: 0, emoji: "🍒", name: "Cherry", baseValue: 10 },
   { id: 1, emoji: "🍋", name: "Lemon", baseValue: 20 },
@@ -202,8 +208,12 @@ let SKINS = [
   { id:2, name:"Neon", price:1000, owned:false, active:false, color:"linear-gradient(90deg,#ff7eb3,#7afcff)" },
   { id:3, name:"Diamond", price:2500, owned:false, active:false, color:"linear-gradient(90deg,#9be15d,#00e3ae)" },
   { id:4, name:"Rainbow", price:5000, owned:false, active:false, color:"linear-gradient(90deg,#f093fb,#f5576c)" },
+  { id:5, name:"Cyberpunk", price:7500, owned:false, active:false, color:"linear-gradient(90deg,#7f00ff,#e100ff)" },
+  { id:6, name:"Ocean", price:10000, owned:false, active:false, color:"linear-gradient(90deg,#2b5876,#4e4376)" },
+  { id:7, name:"Fire", price:15000, owned:false, active:false, color:"linear-gradient(90deg,#ff512f,#dd2476)" },
 ];
 
+/* Roulette numbers + color sequence */
 const ROULETTE_NUMBERS = [
   { number: 0, color: "green" },
   { number: 32, color: "red" }, { number: 15, color: "black" }, { number: 19, color: "red" },
@@ -274,7 +284,7 @@ function getActiveSkin(){ return SKINS.find(s=>s.active) || SKINS[0]; }
 function applySkinLook(){
   const skin = getActiveSkin();
   document.getElementById('mainCard').style.background = skin.color;
-  $('skinInfo').textContent = `Active multiplier: x${skin.id+1}`;
+  $('skinInfo').textContent = `Skins are cosmetic`;
 }
 function showView(name){
   gameMode = name;
@@ -284,7 +294,7 @@ function showView(name){
   $('gameTitle').textContent = name==='slots' ? 'Slot Machine' : name==='roulette' ? 'Roulette' : 'Blackjack';
 }
 
-/* ---------- Slots logic ---------- */
+/* ---------- SLOTS (flat $100 win) ---------- */
 function spinSlots(){
   if(isSpinning) return;
   if(balance < 10){ alert('Insufficient funds'); return; }
@@ -311,9 +321,8 @@ function setReel(i,idx){
 function finalizeSlots(newReels){
   const isWin = newReels[0]===newReels[1] && newReels[1]===newReels[2];
   if(isWin){
-    const symbol = SYMBOLS[newReels[0]];
-    const skinMultiplier = getActiveSkin().id + 1;
-    const win = symbol.baseValue * skinMultiplier;
+    // Flat $100 payout for slot match (user requested)
+    const win = 100;
     balance += win; renderBalance();
     winAmount = win;
     $('slotsWinText').textContent = `WIN +$${win}`;
@@ -322,45 +331,107 @@ function finalizeSlots(newReels){
   }
 }
 
-/* ---------- Roulette logic ---------- */
+/* ---------- ROULETTE with colored wheel and number betting ---------- */
+const WHEEL_EL = $('wheelInner');
+
+function buildWheelGradient(){
+  // Build a conic-gradient string from ROULETTE_NUMBERS
+  const count = ROULETTE_NUMBERS.length;
+  const slice = 100 / count; // percentage per slice
+  let parts = [];
+  let start = 0;
+  for(let i=0;i<count;i++){
+    const color = ROULETTE_NUMBERS[i].color === 'red' ? '#ef4444' : ROULETTE_NUMBERS[i].color === 'black' ? '#111827' : '#16a34a';
+    const end = start + slice;
+    parts.push(`${color} ${start}% ${end}%`);
+    start = end;
+  }
+  return `conic-gradient(${parts.join(',')})`;
+}
+function setWheelVisual(){
+  WHEEL_EL.style.background = buildWheelGradient();
+}
+setWheelVisual();
+
+let wheelRotation = 0;
+
 function setRouletteBet(color){
   if(isRouletteSpinning) return;
   rouletteBet = rouletteBet===color ? null : color;
   $('betRed').style.opacity = rouletteBet==='red' ? 1 : 0.8;
   $('betBlack').style.opacity = rouletteBet==='black' ? 1 : 0.8;
 }
-function spinRoulette(){
+
+function spinRoulette(spinType='color', chosenNumber=null){
   if(isRouletteSpinning) return;
-  if(!rouletteBet){ alert('Choose red or black'); return; }
+  // spinType: 'color' or 'number'
+  if(spinType === 'color' && !rouletteBet){ alert('Choose red or black'); return; }
   if(balance < 50){ alert('Insufficient funds'); return; }
+
   balance -= 50; renderBalance();
   isRouletteSpinning = true;
   spins++; renderSpins();
   $('rouletteDisplay').textContent = '...';
-  $('wheelInner').classList.add('spin-anim');
-  setTimeout(()=>{
-    $('wheelInner').classList.remove('spin-anim');
-    const idx = Math.floor(Math.random()*ROULETTE_NUMBERS.length);
-    const res = ROULETTE_NUMBERS[idx];
-    $('rouletteDisplay').textContent = res.number;
-    $('rouletteDisplay').style.color = res.color==='red' ? '#f87171' : res.color==='black' ? '#fff' : '#34d399';
-    if(res.number !== 0 && res.color === rouletteBet){
-      const win = 100 * (getActiveSkin().id + 1);
-      balance += win; renderBalance();
-      $('rouletteWin').textContent = `WIN +$${win}`;
-      $('rouletteWin').style.display = '';
-      setTimeout(()=>{$('rouletteWin').style.display='none';},2600);
-    } else {
-      // lose -> nothing
+  $('rouletteWin').style.display='none';
+
+  // pick random index result
+  const idx = Math.floor(Math.random()*ROULETTE_NUMBERS.length);
+  const result = ROULETTE_NUMBERS[idx];
+
+  // compute rotation to land on the chosen slice
+  const count = ROULETTE_NUMBERS.length;
+  const sliceDeg = 360 / count;
+  // target angle center for idx (we want that slice to stop under ticker which is at top)
+  const targetAngle = (idx * sliceDeg) + (sliceDeg / 2);
+  // We'll rotate wheel so that target center aligns with top (0deg), accounting for current rotation
+  // Choose a big spin + target to create animation
+  const spinsCount = 5 + Math.floor(Math.random()*3); // 5-7 spins
+  const finalRotation = spinsCount*360 + (360 - targetAngle);
+  WHEEL_EL.style.transition = 'transform 2.4s cubic-bezier(.1,.8,.2,1)';
+  WHEEL_EL.style.transform = `rotate(${finalRotation}deg)`;
+
+  // After transition end, show result
+  WHEEL_EL.addEventListener('transitionend', function onEnd(){
+    WHEEL_EL.removeEventListener('transitionend', onEnd);
+    // normalize rotation value
+    wheelRotation = finalRotation % 360;
+    $('rouletteDisplay').textContent = result.number;
+    $('rouletteDisplay').style.color = result.color==='red' ? '#ef4444' : result.color==='black' ? '#fff' : '#34d399';
+
+    // Evaluate bets
+    if(spinType === 'color'){
+      if(result.number !== 0 && result.color === rouletteBet){
+        const win = 100; // color bet pays $100 (keeps simpler)
+        balance += win; renderBalance();
+        $('rouletteWin').textContent = `WIN +$${win}`;
+        $('rouletteWin').style.display='';
+        setTimeout(()=>{$('rouletteWin').style.display='none';},2600);
+      }
+      rouletteBet = null; $('betRed').style.opacity = 0.8; $('betBlack').style.opacity = 0.8;
+    } else if(spinType === 'number'){
+      if(result.number === chosenNumber){
+        const betAmount = 50;
+        const win = betAmount * 35; // standard single number payout
+        balance += win; renderBalance();
+        $('rouletteWin').textContent = `WIN +$${win} (number ${chosenNumber})`;
+        $('rouletteWin').style.display='';
+        setTimeout(()=>{$('rouletteWin').style.display='none';},3600);
+      } else {
+        // lose
+      }
     }
-    rouletteBet = null;
-    $('betRed').style.opacity = 0.8;
-    $('betBlack').style.opacity = 0.8;
+
+    // small reset of wheel transform for next spin to avoid huge accumulated transforms
+    // compute normalized rotation so wheel shows same visual but with 0 rotate to simplify next spin
+    WHEEL_EL.style.transition = 'none';
+    WHEEL_EL.style.transform = `rotate(${wheelRotation}deg)`;
+    // small timeout to allow transition removal to take effect
+    setTimeout(()=>{ WHEEL_EL.style.transition = ''; }, 20);
     isRouletteSpinning = false;
-  }, 1800);
+  });
 }
 
-/* ---------- Blackjack logic ---------- */
+/* ---------- BLACKJACK logic (unchanged) ---------- */
 function startBlackjack(){
   const bet = parseInt($('bjBet').value,10) || 0;
   if(bet <= 0 || bet > balance){ alert('Invalid bet'); return; }
@@ -489,7 +560,7 @@ function renderShop(){
     row.appendChild(right);
     list.appendChild(row);
   });
-  $('skinInfo').textContent = `Active multiplier: x${getActiveSkin().id+1}`;
+  $('skinInfo').textContent = `Skins are cosmetic`;
 }
 function buySkin(id){
   const skin = SKINS.find(s=>s.id===id);
@@ -524,10 +595,15 @@ $('nextGame').addEventListener('click', ()=>{
 $('infoBtn').addEventListener('click', ()=>{ $('infoBox').style.display = $('infoBox').style.display==='none' ? '' : 'none'; });
 $('shopBtn').addEventListener('click', ()=>{ $('shopBox').style.display = $('shopBox').style.display==='none' ? '' : 'none'; renderShop(); applySkinLook(); });
 
-$('spinBtn').addEventListener('click', spinSlots);
+$('spinBtn').addEventListener('click', ()=>spinSlots());
 $('betRed').addEventListener('click', ()=>setRouletteBet('red'));
 $('betBlack').addEventListener('click', ()=>setRouletteBet('black'));
-$('wheel').addEventListener('click', spinRoulette);
+$('betNumberBtn').addEventListener('click', ()=>{
+  const num = parseInt($('rouletteNumber').value,10);
+  if(isNaN(num) || num < 0 || num > 36){ alert('Enter a number between 0 and 36'); return; }
+  spinRoulette('number', num);
+});
+$('wheel').addEventListener('click', ()=>spinRoulette('color'));
 
 $('dealBtn').addEventListener('click', startBlackjack);
 $('hitBtn').addEventListener('click', hitBJ);
@@ -536,7 +612,7 @@ $('standBtn').addEventListener('click', standBJ);
 /* init UI */
 renderBalance(); renderSpins(); applySkinLook(); renderShop(); showView('slots');
 
-/* Small keyboard shortcuts for convenience */
+/* keyboard shortcuts */
 document.addEventListener('keydown',(e)=>{
   if(e.key === '1') showView('slots');
   if(e.key === '2') showView('roulette');
